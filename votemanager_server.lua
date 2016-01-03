@@ -44,59 +44,57 @@ end)
 
 addCommandHandler("vote", function(thePlayer,commandname,...)
     local arg = {...}
+    local id,text,numsOfVariants=0,"bugaga",2
+    --Чтение из таблицы информации. Понадобится в любом случае.
     if #arg>0 then
-        if tonumber(arg[1])~=nil then
-            
-    
-    if #arg==1 then
         if tonumber(arg[1])~=nil then
             local query = dbQuery(handler, "SELECT id,text,numsOfVariants FROM votes WHERE id='"..tonumber(arg[1]).."';" )
             local result, numrows = dbPoll(query, dbpTime)
             if (result and numrows > 0) then
                 if numrows == 1 then
-                    local id,text,numsOfVariants=0,"bugaga",2
                     for index, row in pairs(result) do
                         id,text,numsOfVariants = row['id'],row['text'],row['numsOfVariants']
+                        outputChatBox("Распаршено.",thePlayer,0,255,255)
                     end
-                    dbFree(query)
-                    --Берем из таблицы с именем id голосования данные об голосовании.
-                    local variantsQuery = ""
-                    for i=1,numsOfVariants do
-                        --костылик из-за не полного знания Lua. Должен быть какой-нибудь variantsQuery=join( i , ',')
-                        variantsQuery=variantsQuery.."num"..i
-                        if i~=numsOfVariants then
-                            variantsQuery=variantsQuery..","
-                        end
-                    end
-                    local query = dbQuery(handler, "SELECT "..variantsQuery.." FROM votes_variants WHERE id='"..id.."';" )
-                    local result, numrows = dbPoll(query, dbpTime)
-                    if (result and numrows > 0) then
-                        outputChatBox("Голосование с id="..id..". "..text..".",thePlayer,0,255,255)
-                        outputChatBox("Варианты для голосования:",thePlayer,0,255,255)
-                        for index, row in pairs(result) do
-                            for j=1,numsOfVariants do
-                                outputChatBox(j..". "..row['num'..j]..".",thePlayer,0,255,255)
-                            end
-                        end
-                    else
-                        outputChatBox("Shit hapened #1:",thePlayer,0,255,255)
-                    end
-                    --getPlayerAccount ( thePlayer )
-                    local thirtyDaysInSeconds=2592000
-                    --outputChatBox("id="..id..", text="..text..", num="..numsOfVariants,thePlayer,0,255,255)
-                else outputChatBox("something wrong 1",thePlayer,0,255,255) end
-            else
-                outputChatBox("Такого голосования не существует или произошла ошибка.",thePlayer,0,255,255)
+                    outputChatBox("id1="..id..", text1="..text..", num1="..numsOfVariants,thePlayer,0,255,255)
+                end
+            else outputChatBox("Такого голосования не существует или произошла ошибка.",thePlayer,0,255,255) end
+            dbFree(query)
+        else return end
+    else return end
+    
+    if #arg==1 then
+        --Берем из таблицы с именем id голосования данные об голосовании.
+        local variantsQuery = ""
+        outputChatBox("id2="..id..", text2="..text..", num2="..numsOfVariants,thePlayer,0,255,255)
+        for i=1,tonumber(numsOfVariants) do
+            --костылик из-за не полного знания Lua. Должен быть какой-нибудь variantsQuery=join( i , ',')
+            variantsQuery=variantsQuery.."num"..i
+            if i~=numsOfVariants then
+                variantsQuery=variantsQuery..","
             end
-        else 
-            --неправильные аргументы для голосования.
-            outputChatBox("something wrong 5",thePlayer,0,255,255)
         end
+        local query = dbQuery(handler, "SELECT "..variantsQuery.." FROM votes_variants WHERE id='"..id.."';" )
+        local result, numrows = dbPoll(query, dbpTime)
+        if (result and numrows > 0) then
+            outputChatBox("Голосование с id="..id..". "..text..".",thePlayer,0,255,255)
+            outputChatBox("Варианты для голосования:",thePlayer,0,255,255)
+            for index, row in pairs(result) do
+                for j=1,numsOfVariants do
+                    outputChatBox(j..". "..row['num'..j]..".",thePlayer,0,255,255)
+                end
+            end
+        else
+            outputChatBox("Shit hapened #1:",thePlayer,0,255,255)
+        end
+        --getPlayerAccount ( thePlayer )
+        local thirtyDaysInSeconds=2592000
+        --outputChatBox("id="..id..", text="..text..", num="..numsOfVariants,thePlayer,0,255,255)
+
     elseif #arg==2 then
         --команда с 2мя аргументами для голосования за конкретноеголосование.
-        outputChatBox("2 args, В разработке",thePlayer,0,255,255)
-        if tonumber(arg[1])~=nil and tonumber(arg[2])~= then
-            
+        if tonumber(arg[1])~=nil and tonumber(arg[2])~=nil then
+            outputChatBox("2 args ok, В разработке",thePlayer,0,255,255)
         end
     end
 end)
