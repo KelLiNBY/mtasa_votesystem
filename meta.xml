@@ -1,0 +1,13 @@
+<meta>
+    <info author="KelLiN" description="Голосовалка" type="script" version="0.0.0.0.0.1" />
+    <include resource="helpmanager" />
+    
+    <script src="votemanager_server.lua" type="server"/>
+    <config src="help.xml" type="client" />
+    
+    <settings>
+        <setting name="*color" value="#DF6464" />
+        <setting name="*default_timeout" value="[15]"/>
+        <setting name="*default_numsOfPlayersToVoteEnd" value="[35]"/>
+    </settings>
+</meta>
