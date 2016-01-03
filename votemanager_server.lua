@@ -14,7 +14,10 @@ local vote = {} -- The Vote array
 local voteData = {} -- The Vote Data array
 
 --local saveBackupTimer -- не стал делать. Будет много io и проца есть, сделаю memcache.
-
+--хз что за версия sqlite в мта и экранирует ли сама.
+local function MySQLEscape(Value)
+return string.gsub(tostring(Value),';','_')
+end
 -- STARTUP EVENT HANDLER --
 
 addEventHandler("onResourceStart", getResourceRootElement(), function()
@@ -93,9 +96,35 @@ addCommandHandler("vote", function(thePlayer,commandname,...)
 
     elseif #arg==2 then
         --команда с 2мя аргументами для голосования за конкретноеголосование.
-        if tonumber(arg[1])~=nil and tonumber(arg[2])~=nil then
+        if tonumber(arg[1])~=nil and tonumber(arg[2])~=nil and tonumber(arg[2])>0 and tonumber(arg[2])<=numsOfVariants then
             outputChatBox("2 args ok, В разработке",thePlayer,0,255,255)
-        end
+            local query = dbQuery(handler, "SELECT accvariant FROM '"..tonumber(arg[1]).."' WHERE accname='"..tostring(MySQLEscape(getPlayerAccount(thePlayer))).."';" )
+            local result, numrows = dbPoll(query, dbpTime)
+            if (result and numrows > 0) then
+                --Голосовал, отказ в голосовании.
+                for index, row in pairs(result) do
+                    variant = row['accvariant']
+                    outputChatBox("Вы уже голосовали за вариант "..variant,thePlayer,0,255,255)
+                end
+                outputChatBox("id1="..id..", text1="..text..", num1="..numsOfVariants,thePlayer,0,255,255)
+                dbFree(query)
+            else 
+                --запись голоса в базу.
+                local query = dbQuery(handler, "INSERT INTO '"..tonumber(arg[1]).."' (accname,accvariant) values ('"..tostring(MySQLEscape(getPlayerAccount(thePlayer))).."', '"..tonumber(arg[2]).."');")
+                outputChatBox("dbQuery OK", thePlayer, 0, 255, 0)
+                local result, numrows,lastid = dbPoll(query, dbpTime)
+                outputChatBox("dbPoll OK", thePlayer, 0, 255, 0)
+                outputChatBox("result="..tostring(result), thePlayer, 0, 255, 0)
+                if(result) then
+                    outputChatBox("Вы успешно проголосовали за вариант "..tonumber(arg[2]), thePlayer, 0, 255, 0)
+                    return
+                elseif result == false then
+                    local error_code,error_msg = numrows,lastid
+                    outputChatBox("Ошибка при голосовании! Обратитесь к администрации через команду /report", thePlayer, 255, 0, 0)
+                    --error("Vote error!")
+                end
+            end
+        else outputChatBox("Ошибка, вы ввели неверный вариант",thePlayer,0,255,255) end
     end
 end)
 
