@@ -114,8 +114,8 @@ addCommandHandler("vote", function(thePlayer,commandname,...)
     elseif #arg==2 then
         --команда с 2мя аргументами для голосования за конкретноеголосование.
         if tonumber(arg[1])~=nil and tonumber(arg[2])~=nil and tonumber(arg[2])>0 and tonumber(arg[2])<=numsOfVariants then
-            outputChatBox("2 args ok, В разработке",thePlayer,0,255,255)
-            local query = dbQuery(handler, "SELECT accvariant FROM '"..tonumber(arg[1]).."' WHERE accname='"..tostring(MySQLEscape(getPlayerAccount(thePlayer))).."';" )
+            outputChatBox("2 args ok",thePlayer,0,255,255)
+            local query = dbQuery(handler, "SELECT accvariant FROM "..tonumber(arg[1]).." WHERE accname='"..tostring(MySQLEscape(getPlayerAccount(thePlayer))).."';" )
             local result, numrows = dbPoll(query, dbpTime)
             if (result and numrows > 0) then
                 --Голосовал, отказ в голосовании.
@@ -146,10 +146,63 @@ addCommandHandler("vote", function(thePlayer,commandname,...)
 
 end)
 
+--в луа этой шляпы нет. Это просто нет слов...
+--взято с http://lua-users.org/wiki/SplitJoin
+string.split = function(str, pattern)
+  pattern = pattern or "[^%s]+"
+  if pattern:len() == 0 then pattern = "[^%s]+" end
+  local parts = {__index = table.insert}
+  setmetatable(parts, parts)
+  str:gsub(pattern, parts)
+  setmetatable(parts, nil)
+  parts.__index = nil
+  return parts
+end
 -- /votecreate --
 addCommandHandler("votecreate", function(thePlayer,commandname,...)
+    --лучше бы это вынести в GUI,т.к. луа ущербна в работе со строками.
     local arg = {...}
-    <10
+    if #arg>1 then
+        local stringWithAllParameters = table.concat(arg, " ")
+        if string.match(stringWithAllParameters,";") then
+            outputChatBox("ARGS"..stringWithAllParameters,thePlayer,0,255,255)
+            args=stringWithAllParameters:split("[^;]+")
+            outputChatBox("Количество аргов"..#args,thePlayer,0,255,255)
+            if #args>2 and #args<11 then
+                local argsnum = #args-1
+                local query = dbQuery(handler, "INSERT INTO 'votes' (CreatedBy,text,numsOfVariants) values ('"..tostring(MySQLEscape(getAccountName(getPlayerAccount(thePlayer)))).."', '"..args[1].."','"..argsnum.."');")
+                
+                local result, numrows,id = dbPoll(query, dbpTime)
+                dbFree(query)
+                outputChatBox("lastid="..id, thePlayer, 0, 255, 0)
+                
+                local Query = dbQuery(handler,"CREATE TABLE IF NOT EXISTS '"..id.."' ('accname' TEXT NOT NULL UNIQUE,'accvariant' INTEGER NOT NULL);")
+                dbFree(query)
+                local arx={10,""}
+                for i=1,10 do
+                    arx[i]=args[i+1] or ""
+                end
+                outputChatBox("id="..id, thePlayer, 0, 255, 0)
+                outputChatBox("Text="..arx[1], thePlayer, 0, 255, 0)
+                outputChatBox("arx2="..arx[2], thePlayer, 0, 255, 0)
+                outputChatBox("arx3="..arx[3], thePlayer, 0, 255, 0)
+                outputChatBox("arx4="..arx[4], thePlayer, 0, 255, 0)
+                outputChatBox("arx5="..arx[5], thePlayer, 0, 255, 0)
+                outputChatBox("arx6="..arx[6], thePlayer, 0, 255, 0)
+                outputChatBox("arx7="..arx[7], thePlayer, 0, 255, 0)
+                local query = dbQuery(handler, "INSERT INTO 'votes_variants' (id,num1,num2,num3,num4,num5,num6,num7,num8,num9,num10) values ("..id..", '"..arx[1].."', '"..arx[2].."', '"..arx[3].."', '"..arx[4].."', '"..arx[5].."', '"..arx[6].."', '"..arx[7].."', '"..arx[8].."', '"..arx[9].."', '"..arx[10].."')")
+                local result, numrows,lastid = dbPoll(query, dbpTime)
+                dbFree(query)
+                outputChatBox("Голосование создано.", thePlayer, 0, 255, 0)
+            else
+                outputChatBox("Ошибка: количество аргументов должнобыть не менее 2х и не более 10.",thePlayer,0,255,255)
+            end
+        else
+            outputChatBox("Неправильный разделитель вопроса и вариантов ответа",thePlayer,0,255,255)
+        end
+    else
+        outputChatBox("Ошибка : неправильное количество аргументов.",thePlayer,0,255,255)
+    end
 
 end)
 
