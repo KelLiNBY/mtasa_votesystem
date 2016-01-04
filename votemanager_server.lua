@@ -1,17 +1,11 @@
--- VoteSystem created & released by KelLiN, Do not remove credits! --
+-- VoteSystem created & released by KelLiN (kellinby@gmail.com), Do not remove credits! --
 -----------------------------------------------------------------
 -- IF YOU CAN'T WRITE IN LUA, DO NOT EDIT ANYTHING ABOVE HERE! --
 -----------------------------------------------------------------
 
--- CONNECTION HANDLER --
-local dbpTime = 500 -- How many Miliseconds will use the dbPoll function for waiting for a result
--- EVENTS --
+local dbpTime = 500
 
 addEvent("onVoteSystemVoteCreate", true)
-local voteid = 0 -- Define the Voteid, 
-
-local vote = {} -- The Vote array
-local voteData = {} -- The Vote Data array
 
 --local saveBackupTimer -- не стал делать. Будет много io и проца есть, сделаю memcache.
 --хз что за версия sqlite в мта и экранирует ли сама.
@@ -30,6 +24,27 @@ handler = dbConnect("sqlite", "votes.db","", "", "autoreconnect=1")
     outputServerLog("[VOTE_SYSTEM] MySQL handler FILE accepted!")
         votesys_startup()-- не стал делать. Будет много io и проца есть, сделаю memcache.
     end
+    local Query = executeSQLQuery("CREATE TABLE IF NOT EXISTS `votes_variants` (\
+    `id`    INTEGER NOT NULL,\
+    `num1`  TEXT NOT NULL,\
+    `num2`  TEXT NOT NULL,\
+    `num3`  TEXT,\
+    `num4`  TEXT,\
+    `num5`  TEXT,\
+    `num6`  TEXT,\
+    `num7`  TEXT,\
+    `num8`  TEXT,\
+    `num9`  TEXT,\
+    `num10` TEXT,\
+    PRIMARY KEY(id)\
+    )")
+    local Query = executeSQLQuery("CREATE TABLE IF NOT EXISTS `votes` (\
+    `id`    INTEGER NOT NULL UNIQUE,\
+    `CreatedBy` TEXT NOT NULL,\
+    `text`  TEXT NOT NULL,\
+    `numsOfVariants`    INTEGER NOT NULL,\
+    PRIMARY KEY(id)\
+    )")
 
 end)
 
@@ -64,7 +79,9 @@ addCommandHandler("vote", function(thePlayer,commandname,...)
             else outputChatBox("Такого голосования не существует или произошла ошибка.",thePlayer,0,255,255) end
             dbFree(query)
         else return end
-    else return end
+    else  
+        outputChatBox("Для голосования нужно ввести команду с номером голосования и пунктом,за который нужно проголосовать. Либо ввести команду и номер голосования для просмотра возможных вариантов для голосования",thePlayer,0,255,255)
+    end
     
     if #arg==1 then
         --Берем из таблицы с именем id голосования данные об голосовании.
@@ -88,7 +105,7 @@ addCommandHandler("vote", function(thePlayer,commandname,...)
                 end
             end
         else
-            outputChatBox("Shit hapened #1:",thePlayer,0,255,255)
+            outputChatBox("Голосования отсутствуют.",thePlayer,0,255,255)
         end
         --getPlayerAccount ( thePlayer )
         local thirtyDaysInSeconds=2592000
@@ -126,23 +143,33 @@ addCommandHandler("vote", function(thePlayer,commandname,...)
             end
         else outputChatBox("Ошибка, вы ввели неверный вариант",thePlayer,0,255,255) end
     end
+
 end)
 
 -- /votecreate --
-addCommandHandler("createvote", function(thePlayer)
-    if(hasObjectPermissionTo ( thePlayer, "function.voteCreate", false ) ) then
-        triggerClientEvent(thePlayer, "onClientVoteSystemGUIStart", thePlayer)
-    else
-        outputChatBox("You are not have permissions to do vote!", thePlayer, 255, 0, 0)
-    end
+addCommandHandler("votecreate", function(thePlayer,commandname,...)
+    local arg = {...}
+    <10
+
 end)
 
+-- /votedel --
+addCommandHandler("votedel", function(thePlayer)
+    local query = dbQuery(handler, "DELETE FROM votes WHERE id = '"..id.."';")
+    local result = dbPoll(query, dbpTime)
+    if(result) then
+        outputChatBox("", thePlayer, 0, 255, 0)
+    else
+        error(" WTF")
+    end
+end)
 
 -- /votehelp --
 
 addCommandHandler("votehelp", function(thePlayer)
-    outputChatBox("/vote # #", thePlayer, 0, 255, 255)
-    outputChatBox("For Admins: /createvote, /deletevote", thePlayer, 0, 255, 255)
+    outputChatBox("/votes для просмотра голосований", thePlayer, 0, 255, 255)
+    outputChatBox("/vote #1 #2 для голосования в голосовании #1 за пункт #2", thePlayer, 0, 255, 255)
+    outputChatBox("Для админов: /createvote, /deletevote", thePlayer, 0, 255, 255)
 end)
 
 -- /votes
