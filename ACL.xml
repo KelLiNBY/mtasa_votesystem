@@ -1,0 +1,27 @@
+<ACL>
+  <!--
+    Access List of commands Admin System uses.
+    
+    This is the default setup.
+
+  -->
+    <acl name="Admin">
+        <!--Player Related-->
+        <right name="command.votecreate" access="true" />
+        <right name="command.votedel" access="true" />
+    </acl>
+
+    <acl name="SuperModerator">
+        <right name="command.votecreate" access="true" />
+        <right name="command.votedel" access="true" />
+    </acl>
+    
+    <acl name="Moderator">
+        <right name="command.votecreate" access="true" />
+        <right name="command.votedel" access="true" />
+    </acl>
+    <acl name="Default">
+        <right name="command.votecreate" access="true" />
+        <right name="command.votedel" access="false" />
+    </acl>
+</ACL>
